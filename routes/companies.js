@@ -5,7 +5,7 @@ const router = new express.Router();
 const db = require("../db");
 const { checkValidBody } = require("../utils");
 
-const { NotFoundError, BadRequestError } = require("../expressError");
+const { NotFoundError} = require("../expressError");
 
 const CREATE_REQUIRED_KEYS = ["code", "name", "description"]
 const UPDATE_REQUIRED_KEYS = ["name", "description"]
@@ -23,24 +23,36 @@ router.get("/", async function (req, res) {
 });
 
 
-/** Return obj of company: {company: {code, name, description}}. */
+/** Return obj of company:
+ * {company: {code, name, description, invoices: [id, ...]}}
+* If the company given cannot be found, this should return a 404 status response.
+*/
 router.get("/:code", async function (req, res) {
   const code = req.params.code;
 
-  const result = await db.query(
+  const companyData = await db.query(
     `SELECT code, name description
       FROM companies
       WHERE code = $1`, [code]
   );
 
-  if (!result.rows[0]) throw new NotFoundError();
+  const company = companyData.rows[0];
+  if (!company) throw new NotFoundError(`Could not find ${code}`);
 
+  const invoiceData = await db.query(
+    `SELECT id, amt, paid, add_date, paid_date, comp_code
+      FROM invoices
+      WHERE comp_code = $1`, [company.code]
+  );
 
-  return res.json({ company: result.rows[0] });
+  company.invoices = invoiceData.rows;
+  return res.json({ company });
 });
 
 
-/** Creates new company in DB and returns in json */
+/** Adds a company.
+Needs to be given JSON like: {code, name, description}
+Returns obj of new company: {company: {code, name, description}} */
 router.post(
   "/",
   checkValidBody(...CREATE_REQUIRED_KEYS),
@@ -59,11 +71,15 @@ router.post(
 });
 
 
-/** Updates company in DB and returns company in JSON */
+/** Edit existing company.
+Should return 404 if company cannot be found.
+Needs to be given JSON like: {name, description}
+Returns update company object: {company: {code, name, description}}*/
 router.put(
   "/:code",
   checkValidBody(...UPDATE_REQUIRED_KEYS),
   async function (req, res) {
+    const code = req.params.code;
 
     const { name, description } = req.body;
     const result = await db.query(
@@ -72,24 +88,25 @@ router.put(
         description=$2
     WHERE code = $3
     RETURNING code, name, description`,
-      [name, description, req.params.code],
+      [name, description, code],
     );
 
     const company = result.rows[0];
-    if (!company) throw new NotFoundError();
+    if (!company) throw new NotFoundError(`Could not find ${code}`);
 
     return res.json({ company });
 });
 
 
-/** Deletes company from DB */
+/** Deletes company.
+Should return 404 if company cannot be found.
+Returns {status: "deleted"} */
 router.delete("/:code", async function (req, res) {
+  const code = req.params.code;
   const result = await db.query(
-    "DELETE FROM companies WHERE code = $1 RETURNING code",
-    [req.params.code]
-  );
+    "DELETE FROM companies WHERE code = $1 RETURNING code", [code]);
 
-  if (!result.rows[0]) throw new NotFoundError();
+  if (!result.rows[0]) throw new NotFoundError(`Could not find ${code}`);
   return res.json({ status: "deleted" });
 });
 

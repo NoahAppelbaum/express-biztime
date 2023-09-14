@@ -38,7 +38,7 @@ router.get("/:id", async function (req, res) {
 
   const invoice = invoiceData.rows[0]
 
-  if (!invoice) throw new NotFoundError();
+  if (!invoice) throw new NotFoundError(`Could not find ${id}`);
 
   const companyData = await db.query(
     `SELECT code, name, description
@@ -89,6 +89,7 @@ router.put(
   "/:id",
   checkValidBody(...UPDATE_REQUIRED_KEYS),
   async function (req, res) {
+    const id = req.params.id;
 
     const { amt } = req.body;
     const result = await db.query(
@@ -96,16 +97,32 @@ router.put(
     SET amt=$1
     WHERE id = $2
     RETURNING id, comp_code, amt, paid, add_date, paid_date`,
-      [amt, req.params.id],
+      [amt, id],
     );
 
     const invoice = result.rows[0];
-    if (!invoice) throw new NotFoundError();
+    if (!invoice) throw new NotFoundError(`Could not find ${id}`);
 
     return res.json({ invoice });
 });
 
 
+/**Deletes an invoice.
+
+If invoice cannot be found, returns a 404.
+
+Returns: {status: "deleted"} */
+router.delete("/:id", async function (req, res) {
+  const id = req.params.id;
+
+  const result = await db.query(
+    "DELETE FROM invoices WHERE id = $1 RETURNING id",
+    [id]
+  );
+
+  if (!result.rows[0]) throw new NotFoundError(`Could not find ${id}`);
+  return res.json({ status: "deleted" });
+});
 
 
 module.exports = router;
