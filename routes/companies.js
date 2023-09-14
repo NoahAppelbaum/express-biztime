@@ -3,34 +3,40 @@
 const express = require("express");
 const router = new express.Router();
 const db = require("../db")
-const {checkValidBody, checkValidEntry} = require("../utils");
+const {checkValidBody} = require("../utils");
 
 const { NotFoundError, BadRequestError } = require("../expressError");
 
+
 /** Returns list of companies, like {companies: [{code, name}, ...]} */
 router.get("/", async function(req, res) {
-  const results = await db.query(
+  const result = await db.query(
     `SELECT code, name
       FROM companies`
   )
 
-  return res.json({companies: results.rows})
+  return res.json({companies: result.rows})
 })
 
+
 /** Return obj of company: {company: {code, name, description}}. */
-router.get("/:code", checkValidEntry("code"), async function(req, res) {
-  //Error handling via middleware!
+router.get("/:code", async function(req, res) {
   const code = req.params.code;
 
-  const results = await db.query(
+  const result = await db.query(
     `SELECT code, name description
       FROM companies
       WHERE code = $1`, [code]
   );
 
-  return res.json({company: results.rows[0]});
+  if (!result.rows[0]) throw new NotFoundError()
+
+
+  return res.json({company: result.rows[0]});
 })
 
+
+/** Creates new company in DB and returns in json */
 router.post("/", checkValidBody, async function(req, res) {
   for (const key of ["code", "name", "description"]) {
     if (!(key in req.body)) {
@@ -50,7 +56,9 @@ router.post("/", checkValidBody, async function(req, res) {
   return res.status(201).json({ company });
 })
 
-router.put("/:code", checkValidEntry("code"), checkValidBody, async function(req, res) {
+
+/** Updates company in DB and returns company in JSON */
+router.put("/:code", checkValidBody, async function(req, res) {
   for (const key of ["name", "description"]) {
     if (!(key in req.body)) {
       throw new BadRequestError();
@@ -68,14 +76,19 @@ router.put("/:code", checkValidEntry("code"), checkValidBody, async function(req
   );
 
   const company = result.rows[0];
+  if (!company) throw new NotFoundError()
+
   return res.json({ company });
 })
 
-router.delete("/:code", checkValidEntry("code"), async function(req, res) {
-  await db.query(
-    "DELETE FROM companies WHERE code = $1", [req.params.code],
+
+/** Deletes company from DB */
+router.delete("/:code", async function(req, res) {
+  const result = await db.query(
+    "DELETE FROM companies WHERE code = $1 RETURNING code", [req.params.code]
   );
 
+  if (!result.rows[0]) throw new NotFoundError()
   return res.json({ status: "deleted" });
 })
 
