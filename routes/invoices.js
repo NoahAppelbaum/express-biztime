@@ -23,10 +23,10 @@ router.get("/", async function (req, res) {
 
 
 /** Returns obj on given invoice.
-
-If invoice cannot be found, returns 404.
-
-Returns {invoice: {id, amt, paid, add_date, paid_date, company: {code, name, description}} */
+* If invoice cannot be found, returns 404.
+* Returns {invoice:
+*  {id, amt, paid, add_date, paid_date, company: {code, name, description}}
+*/
 router.get("/:id", async function (req, res) {
   const id = req.params.id;
 
@@ -56,10 +56,9 @@ router.get("/:id", async function (req, res) {
 
 
 /** Adds an invoice.
-
-Needs to be passed in JSON body of: {comp_code, amt}
-
-Returns: {invoice: {id, comp_code, amt, paid, add_date, paid_date}} */
+* Needs to be passed in JSON body of: {comp_code, amt}
+* Returns: {invoice: {id, comp_code, amt, paid, add_date, paid_date}}
+*/
 router.post(
   "/",
   checkValidBody(...CREATE_REQUIRED_KEYS),
@@ -80,11 +79,10 @@ router.post(
 
 /** Updates an invoice.
 
-If invoice cannot be found, returns a 404.
-
-Needs to be passed in a JSON body of {amt}
-
-Returns: {invoice: {id, comp_code, amt, paid, add_date, paid_date}} */
+* If invoice cannot be found, returns a 404.
+* Needs to be passed in a JSON body of {amt}
+* Returns: {invoice: {id, comp_code, amt, paid, add_date, paid_date}}
+*/
 router.put(
   "/:id",
   checkValidBody(...UPDATE_REQUIRED_KEYS),
@@ -108,10 +106,9 @@ router.put(
 
 
 /**Deletes an invoice.
-
-If invoice cannot be found, returns a 404.
-
-Returns: {status: "deleted"} */
+* If invoice cannot be found, returns a 404.
+* Returns: {status: "deleted"}
+*/
 router.delete("/:id", async function (req, res) {
   const id = req.params.id;
 

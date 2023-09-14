@@ -24,7 +24,7 @@ router.get("/", async function (req, res) {
 
 
 /** Return obj of company:
- * {company: {code, name, description, invoices: [id, ...]}}
+* {company: {code, name, description, invoices: [id, ...]}}
 * If the company given cannot be found, this should return a 404 status response.
 */
 router.get("/:code", async function (req, res) {
@@ -51,8 +51,9 @@ router.get("/:code", async function (req, res) {
 
 
 /** Adds a company.
-Needs to be given JSON like: {code, name, description}
-Returns obj of new company: {company: {code, name, description}} */
+* Needs to be given JSON like: {code, name, description}
+* Returns obj of new company: {company: {code, name, description}}
+*/
 router.post(
   "/",
   checkValidBody(...CREATE_REQUIRED_KEYS),
@@ -72,9 +73,10 @@ router.post(
 
 
 /** Edit existing company.
-Should return 404 if company cannot be found.
-Needs to be given JSON like: {name, description}
-Returns update company object: {company: {code, name, description}}*/
+* Should return 404 if company cannot be found.
+* Needs to be given JSON like: {name, description}
+* Returns update company object: {company: {code, name, description}}
+*/
 router.put(
   "/:code",
   checkValidBody(...UPDATE_REQUIRED_KEYS),
@@ -99,8 +101,9 @@ router.put(
 
 
 /** Deletes company.
-Should return 404 if company cannot be found.
-Returns {status: "deleted"} */
+* Should return 404 if company cannot be found.
+* Returns {status: "deleted"}
+*/
 router.delete("/:code", async function (req, res) {
   const code = req.params.code;
   const result = await db.query(
