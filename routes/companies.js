@@ -7,7 +7,7 @@ const {checkValidBody, checkValidEntry} = require("../utils");
 
 const { NotFoundError, BadRequestError } = require("../expressError");
 
-
+/** Returns list of companies, like {companies: [{code, name}, ...]} */
 router.get("/", async function(req, res) {
   const results = await db.query(
     `SELECT code, name
@@ -17,6 +17,7 @@ router.get("/", async function(req, res) {
   return res.json({companies: results.rows})
 })
 
+/** Return obj of company: {company: {code, name, description}}. */
 router.get("/:code", checkValidEntry("code"), async function(req, res) {
   //Error handling via middleware!
   const code = req.params.code;
