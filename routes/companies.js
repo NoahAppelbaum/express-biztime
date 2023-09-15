@@ -5,10 +5,10 @@ const router = new express.Router();
 const db = require("../db");
 const { checkValidBody } = require("../utils");
 
-const { NotFoundError} = require("../expressError");
+const { NotFoundError } = require("../expressError");
 
-const CREATE_REQUIRED_KEYS = ["code", "name", "description"]
-const UPDATE_REQUIRED_KEYS = ["name", "description"]
+const CREATE_REQUIRED_KEYS = ["code", "name", "description"];
+const UPDATE_REQUIRED_KEYS = ["name", "description"];
 
 
 /** Returns list of companies, like {companies: [{code, name}, ...]} */
@@ -69,7 +69,7 @@ router.post(
 
     const company = result.rows[0];
     return res.status(201).json({ company });
-});
+  });
 
 
 /** Edit existing company.
@@ -97,7 +97,7 @@ router.put(
     if (!company) throw new NotFoundError(`Could not find ${code}`);
 
     return res.json({ company });
-});
+  });
 
 
 /** Deletes company.

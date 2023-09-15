@@ -2,13 +2,13 @@
 
 const express = require("express");
 const router = new express.Router();
-const db = require("../db")
-const {checkValidBody} = require("../utils");
+const db = require("../db");
+const { checkValidBody } = require("../utils");
 
 const { NotFoundError, BadRequestError } = require("../expressError");
 
-const CREATE_REQUIRED_KEYS = ["comp_code", "amt"]
-const UPDATE_REQUIRED_KEYS = ["amt"]
+const CREATE_REQUIRED_KEYS = ["comp_code", "amt"];
+const UPDATE_REQUIRED_KEYS = ["amt"];
 
 /** Return info on invoices: like {invoices: [{id, comp_code}, ...]} */
 router.get("/", async function (req, res) {
@@ -36,14 +36,14 @@ router.get("/:id", async function (req, res) {
       WHERE id = $1`, [id]
   );
 
-  const invoice = invoiceData.rows[0]
+  const invoice = invoiceData.rows[0];
 
   if (!invoice) throw new NotFoundError(`Could not find ${id}`);
 
   const companyData = await db.query(
     `SELECT code, name, description
     FROM companies
-    WHERE companies.code = $1`, [invoice.comp_code] // TODO: Why does ${invoice.comp_code} not work
+    WHERE companies.code = $1`, [invoice.comp_code]
   );
 
   const company = companyData.rows[0];
@@ -74,7 +74,7 @@ router.post(
 
     const invoice = result.rows[0];
     return res.status(201).json({ invoice });
-});
+  });
 
 
 /** Updates an invoice.
@@ -91,10 +91,10 @@ router.put(
 
     const { amt } = req.body;
     const result = await db.query(
-      `UPDATE invoices
-    SET amt=$1
-    WHERE id = $2
-    RETURNING id, comp_code, amt, paid, add_date, paid_date`,
+    `UPDATE invoices
+      SET amt=$1
+      WHERE id = $2
+      RETURNING id, comp_code, amt, paid, add_date, paid_date`,
       [amt, id],
     );
 
@@ -102,7 +102,7 @@ router.put(
     if (!invoice) throw new NotFoundError(`Could not find ${id}`);
 
     return res.json({ invoice });
-});
+  });
 
 
 /**Deletes an invoice.
@@ -113,7 +113,9 @@ router.delete("/:id", async function (req, res) {
   const id = req.params.id;
 
   const result = await db.query(
-    "DELETE FROM invoices WHERE id = $1 RETURNING id",
+    `DELETE FROM invoices
+      WHERE id = $1
+      RETURNING id`,
     [id]
   );
 

@@ -26,24 +26,5 @@ function checkValidBody(...keys) {
   };
 }
 
-//This middleware Error Handler is cool! It works! But not as well as just
-// validating the query result.
 
-// function checkValidEntry(identifier){
-//  return async function (req, res, next) {
-//   const lookupValue = req.params[identifier];
-
-//   const results = await db.query(
-//     `SELECT code, name description
-//     FROM companies
-//     WHERE ${identifier} = $1`, [lookupValue]
-//   )
-
-//   if (!results.rows.length){
-//     throw new NotFoundError()
-//   }
-
-//   return next()
-// }
-// }
 module.exports = { checkValidBody };
